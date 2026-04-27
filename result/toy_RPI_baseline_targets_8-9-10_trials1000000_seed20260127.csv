@@ -1,0 +1,4 @@
+target_eta,baseline_mc_p,trials,seed,edge_csv,params_csv
+8,0.006649,1000000,20260127,Kodak Digital Camera Supply Chain.csv,Kodak IS parameter.csv
+9,0.003028,1000000,20260127,Kodak Digital Camera Supply Chain.csv,Kodak IS parameter.csv
+10,0.001016,1000000,20260127,Kodak Digital Camera Supply Chain.csv,Kodak IS parameter.csv
