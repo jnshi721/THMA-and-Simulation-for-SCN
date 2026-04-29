@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 import data_loader
-import rates
+import rate_function as rates
 
 
 def ps_eigs_at_time(a: np.ndarray, params, t: float) -> float:

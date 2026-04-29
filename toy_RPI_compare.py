@@ -124,30 +124,7 @@ def _load_baseline_csv(path: Path) -> dict[int, float]:
     return baseline
 
 
-def _load_levels_csv(path: Path) -> dict[int, list[int]]:
-    levels_map: dict[int, list[int]] = {}
-    with path.open("r", newline="", encoding="utf-8") as f:
-        r = csv.DictReader(f)
-        for row in r:
-            if not row:
-                continue
-            eta = int(row["target_eta"])
-            if row.get("levels"):
-                levels = _parse_int_list(row["levels"])
-            elif row.get("base_levels"):
-                levels = _parse_int_list(row["base_levels"])
-                if levels and levels[-1] != eta:
-                    levels = levels + [eta]
-            else:
-                raise ValueError(f"Levels CSV missing 'levels' or 'base_levels' for target_eta={eta}")
-            if not levels or levels[-1] != eta:
-                levels = levels + [eta]
-            levels_map[eta] = levels
-    return levels_map
-
-
 if __name__ == "__main__":
-    t_start = time.perf_counter()
     parser = argparse.ArgumentParser()
     parser.add_argument("--edge_csv", type=str, default=None, help="Edge CSV (default: Kodak Digital Camera Supply Chain.csv)")
     parser.add_argument("--params_csv", type=str, default=None, help="Params CSV (default: Kodak IS parameter.csv)")
@@ -156,10 +133,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--base_levels",
         type=str,
-        default=None,
-        help="Comma-separated IS intermediate healthy levels (required unless --levels_csv is provided).",
+        required=True,
+        help="Comma-separated IS intermediate healthy levels (e.g. 2,4,6). The target eta is appended automatically per experiment.",
     )
-    parser.add_argument("--levels_csv", type=str, default=None, help="CSV with per-target levels (from toy_RPI_IS_auto_levels.py)")
 
     parser.add_argument("--budget", type=int, default=10000, help="Total trajectory budget per estimator per replication")
     parser.add_argument(
@@ -187,29 +163,13 @@ if __name__ == "__main__":
     origin_z = RPI.bitmask_all_infected(n)
 
     targets = _parse_int_list(args.targets)
-    base_levels = _parse_int_list(args.base_levels) if args.base_levels else None
-    levels_csv = Path(args.levels_csv) if args.levels_csv else None
+    base_levels = _parse_int_list(args.base_levels)
     if any(eta <= 0 or eta > n for eta in targets):
         raise ValueError(f"--targets must be in [1, {n}]")
-    if base_levels is not None and levels_csv is not None:
-        raise ValueError("Use either --base_levels or --levels_csv, not both.")
-    if base_levels is None and levels_csv is None:
-        # Default: try to reuse the CSV produced by toy_RPI_IS_auto_levels.py.
-        pattern = f"toy_RPI_auto_levels_targets_{'-'.join(map(str, targets))}_*.csv"
-        matches = sorted(result_dir.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True)
-        if matches:
-            levels_csv = matches[0]
-            print(f"Using auto levels CSV: {levels_csv}")
-        else:
-            raise ValueError(
-                "You must provide --base_levels or --levels_csv. "
-                f"(No auto levels CSV found matching {pattern!r} in {result_dir})"
-            )
-    if base_levels is not None:
-        if any(l <= 0 or l > n for l in base_levels):
-            raise ValueError(f"--base_levels must be in [1, {n}]")
-        if any(base_levels[i] <= base_levels[i - 1] for i in range(1, len(base_levels))):
-            raise ValueError("--base_levels must be strictly increasing")
+    if any(l <= 0 or l > n for l in base_levels):
+        raise ValueError(f"--base_levels must be in [1, {n}]")
+    if any(base_levels[i] <= base_levels[i - 1] for i in range(1, len(base_levels))):
+        raise ValueError("--base_levels must be strictly increasing")
     if int(args.budget) <= 0 or int(args.reps) <= 0:
         raise ValueError("--budget and --reps must be > 0")
 
@@ -237,13 +197,8 @@ if __name__ == "__main__":
     if missing:
         raise ValueError(f"Baseline CSV does not contain targets: {missing} (file: {baseline_csv})")
 
-    levels_map = _load_levels_csv(levels_csv) if levels_csv is not None else {}
-    missing_levels = [int(eta) for eta in targets if levels_csv is not None and int(eta) not in levels_map]
-    if missing_levels:
-        raise ValueError(f"Levels CSV does not contain targets: {missing_levels} (file: {levels_csv})")
-
     for eta in targets:
-        levels = levels_map[int(eta)] if levels_csv is not None else list(base_levels) + [int(eta)]
+        levels = list(base_levels) + [int(eta)]
         p_mc, p_is = run_replicates(
             inp=inp,
             origin_z=origin_z,
@@ -312,18 +267,12 @@ if __name__ == "__main__":
             "mc_var": _fmt_sci_sig(mc_var),
             "is_mean": _fmt_sci_sig(is_mu),
             "is_var": _fmt_sci_sig(is_var),
-            "levels_healthy": ",".join(str(x) for x in (levels_map[int(eta)] if levels_csv is not None else list(base_levels) + [int(eta)])),
         }
         table_rows.append(row)
         print(
             f"{eta:>10d}  {row['mc_mean']:>12}  {row['mc_var']:>12}  "
             f"{row['is_mean']:>12}  {row['is_var']:>12}"
         )
-
-    t_end = time.perf_counter()
-    print("")
-    elapsed = float(t_end - t_start)
-    print(f"Elapsed time (seconds): {_fmt_sig_no_sci(elapsed)}")
 
     # Save the same table to CSV (keep naming consistent with the plot).
     out_results_csv = args.out_results_csv
@@ -335,8 +284,6 @@ if __name__ == "__main__":
     out_results_path = Path(out_results_csv)
     if not out_results_path.is_absolute():
         out_results_path = result_dir / out_results_path
-    for row in table_rows:
-        row["elapsed_seconds"] = _fmt_sci_sig(elapsed)
     with out_results_path.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(
             f,
@@ -346,8 +293,6 @@ if __name__ == "__main__":
                 "mc_var",
                 "is_mean",
                 "is_var",
-                "levels_healthy",
-                "elapsed_seconds",
             ],
         )
         w.writeheader()

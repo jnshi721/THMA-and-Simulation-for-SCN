@@ -1,4 +1,0 @@
-target_eta,base_levels,levels,layers,pilot_trials,pilot_seed,pilot_p_final
-8,"2,4,6","2,4,6,8",4,200,123,0
-9,"3,5,7","3,5,7,9",4,200,123,0.005
-10,"2,5,8","2,5,8,10",4,200,123,0

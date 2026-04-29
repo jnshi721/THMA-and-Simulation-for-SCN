@@ -38,8 +38,9 @@ python -m venv .venv
 From `CompartmentModel/`:
 
 ```
-.\.venv\Scripts\python.exe .\plot_RDI.py --t_end 0.4 --dt 0.01
-.\.venv\Scripts\python.exe .\toy_RPI_compare.py --budget 1000 --reps 30 --seed 1
+.\.venv\Scripts\python.exe .\Appendix_RDI_plot.py --t_end 0.4 --dt 0.01 --edge_csv "data/Kodak Digital Camera Supply Chain.csv" --params_csv "data/Kodak parameter s.csv"
+.\.venv\Scripts\python.exe .\toy_RPI_baseline.py --targets 8,9,10 --trials 1000000 --seed 20260127 --edge_csv "data/Kodak Digital Camera Supply Chain.csv" --params_csv "data/Kodak IS parameter.csv"
+.\.venv\Scripts\python.exe .\toy_RPI_compare.py --budget 1000 --reps 30 --seed 1 --targets 8,9,10 --base_levels 2,5,7 --edge_csv "data/Kodak Digital Camera Supply Chain.csv" --params_csv "data/Kodak IS parameter.csv" --baseline_csv "result/toy_RPI_baseline_targets_8-9-10_trials1000000_seed20260127.csv"
 ```
 
 ## Export / update the lock file

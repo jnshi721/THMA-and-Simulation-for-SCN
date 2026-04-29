@@ -85,7 +85,7 @@ if __name__ == "__main__":
         "--params_csv",
         type=str,
         default=None,
-        help="Params CSV (enterprise,beta_a,beta_b,beta_c,beta_i,delta_a,delta_b,delta_c,delta_i); default: Kodak parameter m.csv",
+        help="Params CSV (enterprise,beta_a,beta_b,beta_c,beta_i,delta_a,delta_b,delta_c,delta_i); default: Kodak parameter s.csv",
     )
     parser.add_argument("--t_end", type=float, default=0.4, help="End time (start is 0)")
     parser.add_argument("--dt", type=float, default=0.01, help="Time step dt")
@@ -186,4 +186,3 @@ if __name__ == "__main__":
         out_path = result_dir / out_path
     fig.savefig(out_path, dpi=300, bbox_inches="tight")
     print(f"Saved: {out_path}")
-

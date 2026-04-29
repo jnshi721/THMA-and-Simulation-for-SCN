@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 
-import rates
+import rate_function as rates
 import data_loader
 
 
@@ -213,4 +213,3 @@ if __name__ == "__main__":
 
     infected_str = ",".join(args.infected) if args.infected else "<default>"
     print(f"t={args.t} infected={infected_str} times={args.times} mean_infection_fraction={mean_frac}")
-

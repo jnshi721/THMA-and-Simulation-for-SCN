@@ -46,7 +46,7 @@ if __name__ == "__main__":
         "--params_csv",
         type=str,
         default=None,
-        help="Params CSV (enterprise,beta_a,beta_b,beta_c,beta_i,delta_a,delta_b,delta_c,delta_i); default: Kodak parameter s.csv",
+        help="Params CSV (enterprise,beta_a,beta_b,beta_c,beta_i,delta_a,delta_b,delta_c,delta_i); default: Kodak parameter m.csv",
     )
     parser.add_argument("--t_end", type=float, default=3, help="End time (start is 0)")
     parser.add_argument("--dt", type=float, default=0.1, help="Time step dt")

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import data_loader
-import rates
+import rate_function as rates
 
 
 @dataclass(frozen=True)

@@ -40,8 +40,8 @@ if __name__ == "__main__":
     here = Path(__file__).resolve().parent
     data_dir = here / "data"
     result_dir = here / "result"
-    edge_csv = Path(args.edge_csv) if args.edge_csv else (data_dir / "Listed Medical Industry Supply Chain Network.csv")
-    params_csv = Path(args.params_csv) if args.params_csv else (data_dir / "Listed Medical Industry parameter.csv")
+    edge_csv = Path(args.edge_csv) if args.edge_csv else (data_dir / "Kodak Digital Camera Supply Chain.csv")
+    params_csv = Path(args.params_csv) if args.params_csv else (data_dir / "Kodak IS parameter.csv")
 
     inp = RPI.load_inputs(edge_csv, params_csv)
     n = len(inp.nodelist)
